@@ -8,19 +8,13 @@ class MarketStoreMonitor : public Monitor {
     int cap[3];
     int avail[3];
     int reserved_supply[3];
-    bool supplier_waiting[3];
     
     Condition can_buy;
     Condition not_sufficient_supply[3];
-    
-    Condition need_supply[3];
 
 public:
-    MarketStoreMonitor() : can_buy(this), not_sufficient_supply{Condition(this), Condition(this), Condition(this)}, need_supply{Condition(this), Condition(this), Condition(this)} {
-        supplier_waiting[0] = supplier_waiting[1] = supplier_waiting[2] = false;
-        reserved_supply[0] = 0; 
-        reserved_supply[1] = 0;
-        reserved_supply[2] = 0;
+    MarketStoreMonitor() : can_buy(this), not_sufficient_supply{Condition(this), Condition(this), Condition(this)} {
+
     }
 
     void initMarket(int cA, int cB, int cC, int mO) {
@@ -35,15 +29,16 @@ public:
         avail[AAA] = cA;
         avail[BBB] = cB;
         avail[CCC] = cC;
+
+        reserved_supply[0] = 0; 
+        reserved_supply[1] = 0;
+        reserved_supply[2] = 0;
     }
 
     void buyM(int aA, int aB, int aC) {
         __synchronized__;
 
         while (aA > avail[AAA] || aB > avail[BBB] || aC > avail[CCC]) {
-            if (aA > avail[AAA]) not_sufficient_supply[AAA].notifyAll();
-            if (aB > avail[BBB]) not_sufficient_supply[BBB].notifyAll();
-            if (aC > avail[CCC]) not_sufficient_supply[CCC].notifyAll();
             can_buy.wait();
         }
 
@@ -97,7 +92,6 @@ void initStore(int cA, int cB, int cC, int mO) {
 
 void buy(int aA, int aB, int aC) {
     marketStore.buyM(aA,aB,aC);
-
 }
 
 void maysupply(int itype, int n) {
