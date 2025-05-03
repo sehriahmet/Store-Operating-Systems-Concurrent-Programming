@@ -38,6 +38,11 @@ public:
     void buyM(int aA, int aB, int aC) {
         __synchronized__;
 
+        if (aA > maxOrd || aB > maxOrd || aC > maxOrd) {
+            // pthread_exit(NULL);
+            return;
+        }
+
         while (aA > avail[AAA] || aB > avail[BBB] || aC > avail[CCC]) {
             can_buy.wait();
         }
@@ -55,6 +60,8 @@ public:
     void maysupplyM(int itype, int n) {
         __synchronized__;
         
+        if (n<0) return; 
+
         while (reserved_supply[itype] + avail[itype] + n > cap[itype]) {
             not_sufficient_supply[itype].wait(); 
         }
@@ -69,6 +76,7 @@ public:
         reserved_supply[itype] -= n;
         avail[itype] += n;
         can_buy.notifyAll();
+        not_sufficient_supply[itype].notifyAll(); // this maybe nonsense but additional check 
 
     }
     

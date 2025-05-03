@@ -1,5 +1,7 @@
 CXXFLAGS=-g
 
+all: testrun 
+
 testrun: testrun.o hw2.o
 	g++ -o testrun testrun.o hw2.o -lpthread
 
